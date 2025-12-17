@@ -2,7 +2,7 @@ name: Scapy unit tests
 
 on:
   push:
-    branches: [master]
+    branches: [master, ci_test]
   pull_request:
     # The branches below must be a subset of the branches above
     branches: [master]
@@ -85,9 +85,9 @@ jobs:
         os: [ubuntu-latest]
         python: ["3.8", "3.9", "3.10", "3.11", "3.12"]
         mode: [non_root]
-        installmode: ['']
+        installmode: [""]
         flags: [" -K scanner"]
-        allow-failure: ['false']
+        allow-failure: ["false"]
         include:
           # Python 3.7
           - os: ubuntu-22.04
@@ -108,7 +108,7 @@ jobs:
           - os: ubuntu-latest
             python: "3.13"
             mode: root
-            installmode: 'libpcap'
+            installmode: "libpcap"
             flags: " -K scanner"
           # macOS tests
           - os: macos-14
@@ -124,7 +124,7 @@ jobs:
           - os: ubuntu-latest
             python: "3.13"
             mode: root
-            allow-failure: 'true'
+            allow-failure: "true"
             flags: " -k scanner"
           - os: ubuntu-latest
             python: "pypy3.10"
@@ -133,12 +133,12 @@ jobs:
           - os: macos-14
             python: "3.13"
             mode: both
-            allow-failure: 'true'
+            allow-failure: "true"
             flags: " -k scanner"
           - os: windows-latest
             python: "3.13"
             mode: both
-            allow-failure: 'true'
+            allow-failure: "true"
             flags: " -k scanner"
     steps:
       - name: Checkout Scapy
@@ -176,20 +176,20 @@ jobs:
     name: pyca/cryptography test
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-    - name: Setup Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: "3.12"
-    - name: Install tox
-      run: pip install tox
-    # pyca/cryptography's CI installs cryptography
-    # then runs the tests. We therefore didn't include it in tox
-    - name: Install cryptography
-      run: pip install cryptography
-    - name: Run tests
-      run: tox -e cryptography
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install tox
+        run: pip install tox
+      # pyca/cryptography's CI installs cryptography
+      # then runs the tests. We therefore didn't include it in tox
+      - name: Install cryptography
+        run: pip install cryptography
+      - name: Run tests
+        run: tox -e cryptography
 
   # CODE-QL
   analyze:
@@ -198,13 +198,13 @@ jobs:
     permissions:
       security-events: write
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 2
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
-      with:
-         languages: 'python'
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: "python"
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3

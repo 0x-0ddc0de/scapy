@@ -12,17 +12,14 @@ import socket
 import struct
 import time
 
+# Typing imports
+from typing import Any, Dict, List, Optional, Tuple, Type
+
 import scapy.utils6
-
-from scapy.consts import BIG_ENDIAN
+from scapy.arch.common import _iff_flags
 from scapy.config import conf
+from scapy.consts import BIG_ENDIAN
 from scapy.error import log_loading
-from scapy.packet import (
-    Packet,
-    bind_layers,
-)
-from scapy.utils import atol, itom
-
 from scapy.fields import (
     ByteEnumField,
     ByteField,
@@ -41,18 +38,8 @@ from scapy.fields import (
     StrLenField,
     XStrLenField,
 )
-
-from scapy.arch.common import _iff_flags
-
-# Typing imports
-from typing import (
-    Any,
-    Dict,
-    List,
-    Optional,
-    Tuple,
-    Type,
-)
+from scapy.packet import Packet, bind_layers
+from scapy.utils import atol, itom
 
 # from <linux/netlink.h> and <linux/rtnetlink.h>
 
@@ -774,18 +761,22 @@ def _get_ips(af_family=socket.AF_UNSPEC):
         ifindex = msg.ifa_index
         address = None
         family = msg.ifa_family
+        local = None
         for attr in msg.data:
             if attr.rta_type == 0x01:  # IFA_ADDRESS
                 address = attr.rta_data
-                break
-        if address is not None:
+            elif attr.rta_type == 0x02:  # IFA_LOCAL
+                local = attr.rta_data
+        # for point-to-point links, IFA_LOCAL gives the correct interface address
+        local_address = local if local is not None else address
+        if local_address is not None:
             data = {
                 "af_family": family,
                 "index": ifindex,
-                "address": address,
+                "address": local_address,
             }
             if family == 10:  # ipv6
-                data["scope"] = scapy.utils6.in6_getscope(address)
+                data["scope"] = scapy.utils6.in6_getscope(local_address)
             ips.setdefault(ifindex, list()).append(data)
     return ips
 
